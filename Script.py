@@ -25,41 +25,44 @@ load_dotenv()
 # defining constants
 horizontal_line_red_dotted = "<hr style='border-top: 2px solid red;margin: 0' />"
 
-gc = gspread.service_account_from_dict(
-    {
-        "type": os.environ.get("type"),
-        "project_id": os.environ.get("project_id"),
-        "private_key_id": os.environ.get("private_key_id"),
-        "private_key": os.environ.get("private_key"),
-        "client_email": os.environ.get("client_email"),
-        "client_id": os.environ.get("client_id"),
-        "auth_uri": os.environ.get("auth_uri"),
-        "token_uri": os.environ.get("token_uri"),
-        "auth_provider_x509_cert_url": os.environ.get("auth_provider_x509_cert_url"),
-        "client_x509_cert_url": os.environ.get("client_x509_cert_url"),
-        "universe_domain": os.environ.get("universe_domain"),
-    }
-)
-
+gc = None
 sh = None
 login_info_sheet = None
 data_sheet = None
 
-# the entire file runs for every page event and google sheets has limitation to connect.
-# With the below condition the sheets are loaded once
-if sh == None:
-    sh = gc.open_by_url(os.environ.get("google_sheet"))
 
-if login_info_sheet == None:
-    login_info_sheet = sh.get_worksheet(0)
+def getGoogleService():
+    return gspread.service_account_from_dict(
+        {
+            "type": os.environ.get("type"),
+            "project_id": os.environ.get("project_id"),
+            "private_key_id": os.environ.get("private_key_id"),
+            "private_key": os.environ.get("private_key"),
+            "client_email": os.environ.get("client_email"),
+            "client_id": os.environ.get("client_id"),
+            "auth_uri": os.environ.get("auth_uri"),
+            "token_uri": os.environ.get("token_uri"),
+            "auth_provider_x509_cert_url": os.environ.get(
+                "auth_provider_x509_cert_url"
+            ),
+            "client_x509_cert_url": os.environ.get("client_x509_cert_url"),
+            "universe_domain": os.environ.get("universe_domain"),
+        }
+    )
 
-if data_sheet == None:
-    data_sheet = sh.get_worksheet(1)
+
+# the entire file runs for every page event and google sheets has limitation to connect. So making connection at funcitonal level
+def getSheetConnection():
+    gs = getGoogleService()
+    return gs.open_by_url(os.environ.get("google_sheet"))
+
+
+def getWorkSheet(index):
+    sh = getSheetConnection()
+    return sh.get_worksheet(index)
 
 
 # define helper functions
-
-
 # To insert a new element, the next available row index is calculated
 def api_get_available_index(worksheet):
     list_of_lists = worksheet.get_all_values()
@@ -69,6 +72,7 @@ def api_get_available_index(worksheet):
 # insert the time student logs in
 # also decide the instruction condition based on the odd or even login order
 def api_record_login_time():
+    login_info_sheet = getWorkSheet(0)
     r = api_get_available_index(login_info_sheet)
 
     st.session_state["show_instructions_first"] = r % 2 == 0
@@ -88,6 +92,7 @@ def api_record_login_time():
 # returns boolean
 # verify if the student email or ID is already present in the data sheet. returns true if present
 def checkStudentDetailsInSheet():
+    data_sheet = getWorkSheet(1)
     student_email = st.session_state["student_email"]
     student_ID = st.session_state["student_ID"]
     emails = data_sheet.col_values(2)
@@ -100,7 +105,14 @@ def checkStudentDetailsInSheet():
 
 
 # insert the recorded values
-def api_record_results(original, ai, open_feedback):
+def api_record_results(
+    original_feedback,
+    ai_feedback,
+    original_readability,
+    ai_readability,
+    open_feedback,
+):
+    data_sheet = getWorkSheet(1)
     allData = data_sheet.get_all_values()
     index = 1
 
@@ -114,14 +126,17 @@ def api_record_results(original, ai, open_feedback):
         index += 1
 
     data_sheet.update(
-        r"B{}:G{}".format(index, index),
+        r"B{}:J{}".format(index, index),
         [
             [
                 st.session_state["student_email"],
                 st.session_state["student_ID"],
-                original,
-                ai,
+                original_feedback,
+                ai_feedback,
+                original_readability,
+                ai_readability,
                 open_feedback,
+                st.session_state["show_instructions_first"],
                 datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
             ]
         ],
@@ -202,8 +217,20 @@ def sendFinalEmail():
 
 
 # decide the conditional render of instructions and store the records
-def handleFinalSubmit(original, ai, open_feedback):
-    api_record_results(original, ai, open_feedback)
+def handleFinalSubmit(
+    original_feedback,
+    ai_feedback,
+    original_readability,
+    ai_readability,
+    open_feedback,
+):
+    api_record_results(
+        original_feedback,
+        ai_feedback,
+        original_readability,
+        ai_readability,
+        open_feedback,
+    )
     time.sleep(3)
 
     if st.session_state["show_instructions_first"]:
@@ -336,7 +363,13 @@ elif st.session_state["web_page"] == "Survey_page":
         )
 
         if final_submit:
-            handleFinalSubmit(original_feedback, ai_feedback, open_feedback)
+            handleFinalSubmit(
+                original_feedback,
+                ai_feedback,
+                original_readability,
+                ai_readability,
+                open_feedback,
+            )
     # end of sidebar
 
     # start of main content
