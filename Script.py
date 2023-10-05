@@ -25,12 +25,8 @@ load_dotenv()
 # defining constants
 horizontal_line_red_dotted = "<hr style='border-top: 2px solid red;margin: 0' />"
 
-gc = None
-sh = None
-login_info_sheet = None
-data_sheet = None
 
-
+# the entire file runs for every page event and google sheets has limitation to connect. So making connection at funcitonal level
 def getGoogleService():
     return gspread.service_account_from_dict(
         {
@@ -51,7 +47,6 @@ def getGoogleService():
     )
 
 
-# the entire file runs for every page event and google sheets has limitation to connect. So making connection at funcitonal level
 def getSheetConnection():
     gs = getGoogleService()
     return gs.open_by_url(os.environ.get("google_sheet"))
