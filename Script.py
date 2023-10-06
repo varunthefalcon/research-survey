@@ -27,6 +27,7 @@ horizontal_line_red_dotted = "<hr style='border-top: 2px solid red;margin: 0' />
 
 
 # the entire file runs for every page event and google sheets has limitation to connect. So making connection at funcitonal level
+@st.cache_resource
 def getGoogleService():
     return gspread.service_account_from_dict(
         {
