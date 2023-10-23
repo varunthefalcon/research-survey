@@ -50,6 +50,7 @@ def getGoogleService():
 
 def getSheetConnection():
     gs = getGoogleService()
+    print(22222222222222)
     return gs.open_by_url(os.environ.get("google_sheet"))
 
 
@@ -94,7 +95,13 @@ def checkStudentDetailsInSheet():
     emails = data_sheet.col_values(2)
     studentIds = data_sheet.col_values(3)
 
-    if student_email.strip() in emails or student_ID.strip() in studentIds:
+    print(emails)
+
+    if student_email.strip() not in emails:
+        # if student_email.strip() in emails or student_ID.strip() in studentIds:
+        st.warning("You are not invited to participate in this survey.")
+        return True
+    elif student_email.strip() in emails and student_ID.strip() in studentIds:
         st.warning("You have already attended the survey. Thank you for participating")
         return True
     return False
@@ -372,13 +379,13 @@ elif st.session_state["web_page"] == "Survey_page":
     st.header("Feedback on your 2nd PSY2008 essay")
 
     # collapsible content rendered with expander
-    with st.expander("**Lecturer's Feedback**"):
+    with st.expander("**Original Feedback**"):
         st.markdown(
             EssayContent.prof_feedback,
             unsafe_allow_html=True,
         )
 
-    with st.expander("**Enhanced AI Feedback, based on Lecturer's Feedback**"):
+    with st.expander("**Alternate Feedback**"):
         st.markdown(
             EssayContent.ai_feedback,
             unsafe_allow_html=True,
