@@ -23,7 +23,9 @@ import EssayContent
 load_dotenv()
 
 # defining constants
-horizontal_line_red_dotted = "<hr style='border-top: 2px solid red;margin: 0' />"
+horizontal_line_red_dotted = (
+    "<hr style='border-top: 2px solid black;margin: 0;' /><br/>"
+)
 
 
 # the entire file runs for every page event and google sheets has limitation to connect. So making connection at funcitonal level
@@ -90,18 +92,18 @@ def api_record_login_time():
 # verify if the student email or ID is already present in the data sheet. returns true if present
 def checkStudentDetailsInSheet():
     data_sheet = getWorkSheet(1)
-    student_email = st.session_state["student_email"]
-    student_ID = st.session_state["student_ID"]
+    student_email = st.session_state["student_email"].strip()
+    student_ID = st.session_state["student_ID"].strip()
     emails = data_sheet.col_values(2)
     studentIds = data_sheet.col_values(3)
 
     print(emails)
 
-    if student_email.strip() not in emails:
-        # if student_email.strip() in emails or student_ID.strip() in studentIds:
+    if student_email not in emails:
+        # if student_email in emails or student_ID in studentIds:
         st.warning("You are not invited to participate in this survey.")
         return True
-    elif student_email.strip() in emails and student_ID.strip() in studentIds:
+    elif student_email in emails and student_ID in studentIds:
         st.warning("You have already attended the survey. Thank you for participating")
         return True
     return False
@@ -109,10 +111,15 @@ def checkStudentDetailsInSheet():
 
 # insert the recorded values
 def api_record_results(
-    original_feedback,
-    ai_feedback,
-    original_readability,
-    ai_readability,
+    Q1A,
+    Q1B,
+    Q2A,
+    Q2B,
+    Q3A,
+    Q3B,
+    Q4A,
+    Q4B,
+    preferred_feedback,
     open_feedback,
 ):
     data_sheet = getWorkSheet(1)
@@ -123,21 +130,26 @@ def api_record_results(
     # if empty the amazon voucher is taken and values are updated into the row
     for items in allData:
         print(items)
-        if items[1] == "":
+        if items[1].strip() == st.session_state["student_email"]:
             st.session_state["amazon_voucher"] = items[0]
             break
         index += 1
 
     data_sheet.update(
-        r"B{}:J{}".format(index, index),
+        r"B{}:O{}".format(index, index),
         [
             [
                 st.session_state["student_email"],
                 st.session_state["student_ID"],
-                original_feedback,
-                ai_feedback,
-                original_readability,
-                ai_readability,
+                Q1A,
+                Q1B,
+                Q2A,
+                Q2B,
+                Q3A,
+                Q3B,
+                Q4A,
+                Q4B,
+                preferred_feedback,
                 open_feedback,
                 st.session_state["show_instructions_first"],
                 datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
@@ -180,12 +192,15 @@ if "system_password" not in st.session_state:
 if "show_instructions_first" not in st.session_state:
     st.session_state["show_instructions_first"] = True
 
+if "final_submit_btn" not in st.session_state:
+    st.session_state["final_submit_btn"] = False
+
 
 # trigger email to verify login and send passcode
 def handleSubmit():
     content = r"Hi, {}({}). Your pass code for the feeback form is {}".format(
-        st.session_state["student_email"].strip(),
-        st.session_state["student_ID"].strip(),
+        st.session_state["student_email"],
+        st.session_state["student_ID"],
         st.session_state["system_password"].strip(),
     )
     print(content)
@@ -221,17 +236,27 @@ def sendFinalEmail():
 
 # decide the conditional render of instructions and store the records
 def handleFinalSubmit(
-    original_feedback,
-    ai_feedback,
-    original_readability,
-    ai_readability,
+    Q1A,
+    Q1B,
+    Q2A,
+    Q2B,
+    Q3A,
+    Q3B,
+    Q4A,
+    Q4B,
+    preferred_feedback,
     open_feedback,
 ):
     api_record_results(
-        original_feedback,
-        ai_feedback,
-        original_readability,
-        ai_readability,
+        Q1A,
+        Q1B,
+        Q2A,
+        Q2B,
+        Q3A,
+        Q3B,
+        Q4A,
+        Q4B,
+        preferred_feedback,
         open_feedback,
     )
     time.sleep(3)
@@ -241,6 +266,11 @@ def handleFinalSubmit(
     else:
         st.session_state["web_page"] = "Conditional_Instructions_page"
     st.experimental_rerun()
+
+
+def toggle_final_submit_btn():
+    st.session_state["final_submit_btn"] = not st.session_state["final_submit_btn"]
+    # st.experimental_rerun()
 
 
 # UI components
@@ -308,71 +338,146 @@ elif st.session_state["web_page"] == "Survey_page":
             horizontal_line_red_dotted,
             unsafe_allow_html=True,
         )
-        original_feedback = st.slider(
-            "Please rate the **original** version of the feebdack you received. \n",
+        st.write("The feedback was clear and easy to understand.")
+        Q1A = st.slider(
+            "**Original** Feedback",
             min_value=0,
             max_value=100,
             step=1,
+            disabled=st.session_state["amazon_voucher"] != False,
+            key="Q1A",
+        )
+        Q1B = st.slider(
+            "**Alternative** Feedback",
+            min_value=0,
+            max_value=100,
+            step=1,
+            key="Q1B",
             disabled=st.session_state["amazon_voucher"] != False,
         )
         st.markdown(
             horizontal_line_red_dotted,
             unsafe_allow_html=True,
         )
-        ai_feedback = st.slider(
-            "Please rate the **alternative** version of the feedback you received.",
+        # Q2
+        st.write("The feedback provided specific suggestions for improvement.")
+        Q2A = st.slider(
+            "**Original** Feedback",
             min_value=0,
             max_value=100,
             step=1,
+            disabled=st.session_state["amazon_voucher"] != False,
+            key="Q2A",
+        )
+        Q2B = st.slider(
+            "**Alternative** Feedback",
+            min_value=0,
+            max_value=100,
+            step=1,
+            key="Q2B",
             disabled=st.session_state["amazon_voucher"] != False,
         )
         st.markdown(
             horizontal_line_red_dotted,
             unsafe_allow_html=True,
         )
-        original_readability = st.slider(
-            "Please rate the readability of the **original** version.",
+        # Q3
+        st.write("Overall, I found the feedback helpful.")
+        Q3A = st.slider(
+            "**Original** Feedback",
+            min_value=0,
+            key="Q3A",
+            max_value=100,
+            step=1,
+            disabled=st.session_state["amazon_voucher"] != False,
+        )
+        Q3B = st.slider(
+            "**Alternative** Feedback",
             min_value=0,
             max_value=100,
             step=1,
+            key="Q3B",
             disabled=st.session_state["amazon_voucher"] != False,
         )
         st.markdown(
             horizontal_line_red_dotted,
             unsafe_allow_html=True,
         )
-
-        ai_readability = st.slider(
-            "Please rate the readability of the **alternate** version.",
+        # Q4
+        st.write(" I am satisfied with the quality of the feedback.")
+        Q4A = st.slider(
+            "**Original** Feedback",
             min_value=0,
             max_value=100,
             step=1,
+            key="Q4A",
+            disabled=st.session_state["amazon_voucher"] != False,
+        )
+        Q4B = st.slider(
+            "**Alternative** Feedback",
+            min_value=0,
+            max_value=100,
+            step=1,
+            key="Q4B",
             disabled=st.session_state["amazon_voucher"] != False,
         )
         st.markdown(
             horizontal_line_red_dotted,
             unsafe_allow_html=True,
         )
-
+        st.write(
+            "If you had to choose between the two versions of the feedback, which of them would you prefer?"
+        )
+        preferred_feedback = st.radio(
+            "",
+            ["original feedback", "alternative feedback"],
+        )
+        st.markdown(
+            horizontal_line_red_dotted,
+            unsafe_allow_html=True,
+        )
         open_feedback = st.text_area(
-            "Your thoughts on reviewing these feedbacks", "", height=250
+            "Please tell us in your own words why you prefer one version of the feedback over the other:",
+            "",
+            height=250,
         )
 
-        final_submit = st.button(
-            "Submit Rating",
-            key="final",
-            type="primary",
-            disabled=st.session_state["amazon_voucher"] != False,
+        st.markdown(
+            horizontal_line_red_dotted,
+            unsafe_allow_html=True,
         )
 
-        if final_submit:
-            handleFinalSubmit(
-                original_feedback,
-                ai_feedback,
-                original_readability,
-                ai_readability,
-                open_feedback,
+        if st.session_state["final_submit_btn"] == False:
+            st.button(
+                "Submit Rating",
+                key="final submit",
+                type="primary",
+                disabled=st.session_state["amazon_voucher"] != False,
+                on_click=toggle_final_submit_btn,
             )
+        else:
+            st.write("Are you sure to submit?")
+            confirm_submit_yes = st.button(
+                "Yes, I have reviewed. Submit now.",
+                key="confirm_yes",
+                type="primary",
+            )
+            st.button(
+                "No, edit again.", key="confirm_no", on_click=toggle_final_submit_btn
+            )
+            if confirm_submit_yes:
+                handleFinalSubmit(
+                    Q1A,
+                    Q1B,
+                    Q2A,
+                    Q2B,
+                    Q3A,
+                    Q3B,
+                    Q4A,
+                    Q4B,
+                    preferred_feedback,
+                    open_feedback,
+                )
     # end of sidebar
 
     # start of main content
@@ -600,6 +705,13 @@ font-size: 3rem;
 }
 #welcome-to-the-survey-by-department-of-psychology{
 text-align: center;
+}
+.stSlider > div, .stSlider p{
+margin-bottom: 0 !important;
+}
+
+.st-fw{
+padding-top: 5px;
 }
 </style>
 """
