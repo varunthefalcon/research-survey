@@ -7,7 +7,6 @@ Excellent introduction that puts the theories in context effectively.
 
 Almost all references conform to APA style (good job). 
 
-
 <b>What could be improved:</b>
 
 You set the grounds for an excellent discussion of the strengths weaknesses of the theories, 

@@ -4,6 +4,8 @@ from datetime import datetime
 # yagmail to handle the email communication
 import yagmail
 
+import numpy as np
+
 # uuid used to generate unique hashs
 import uuid
 
@@ -52,7 +54,6 @@ def getGoogleService():
 
 def getSheetConnection():
     gs = getGoogleService()
-    print(22222222222222)
     return gs.open_by_url(os.environ.get("google_sheet"))
 
 
@@ -88,6 +89,44 @@ def api_record_login_time():
     )
 
 
+def getFeedbacksForStudentID(id):
+    feedbacks_sheet = getWorkSheet(2)
+    statements = feedbacks_sheet.findall(str(id))
+
+    questions = [
+        "<b>Strengths of the piece of work:</b><br/>",
+        "<br/><br/><b>What could be improved:</b><br/>",
+        "<br/><br/><b>How to make improvements:</b><br/>",
+    ]
+
+    if len(statements) == 0:
+        return True
+
+    indexes = []
+    for statement in statements:
+        indexes.append(r"A{}".format(statement.row))
+        indexes.append(r"B{}".format(statement.row))
+
+    result = feedbacks_sheet.batch_get(indexes)
+
+    resultArr = np.array(result).flatten().tolist()
+
+    original_fb = ""
+    alternate_fb = ""
+
+    for i, value in enumerate(resultArr):
+        quesIndex = int(i / 2)
+        if i % 2 == 0:
+            original_fb = "".join([original_fb, questions[quesIndex], value])
+        else:
+            alternate_fb = "".join([alternate_fb, questions[quesIndex], value])
+
+    st.session_state["original_feedback_statement"] = original_fb
+    st.session_state["alternate_feedback_statement"] = alternate_fb
+
+    return False
+
+
 # returns boolean
 # verify if the student email or ID is already present in the data sheet. returns true if present
 def checkStudentDetailsInSheet():
@@ -101,11 +140,20 @@ def checkStudentDetailsInSheet():
 
     if student_email not in emails:
         # if student_email in emails or student_ID in studentIds:
-        st.warning("You are not invited to participate in this survey.")
+        st.warning(
+            "Oops, we can't find your invitation. Please use your university email address and student ID."
+        )
         return True
     elif student_email in emails and student_ID in studentIds:
         st.warning("You have already attended the survey. Thank you for participating")
         return True
+    elif getFeedbacksForStudentID(student_ID):
+        st.warning(
+            "Please check the Student ID. We cannot find survey content for your student ID."
+        )
+        st.warning("Kindly get in touch with t.schultze@qub.ac.uk")
+        return True
+
     return False
 
 
@@ -195,6 +243,12 @@ if "show_instructions_first" not in st.session_state:
 if "final_submit_btn" not in st.session_state:
     st.session_state["final_submit_btn"] = False
 
+if "original_feedback_statement" not in st.session_state:
+    st.session_state["original_feedback_statement"] = ""
+
+if "alternate_feedback_statement" not in st.session_state:
+    st.session_state["alternate_feedback_statement"] = ""
+
 
 # trigger email to verify login and send passcode
 def handleSubmit():
@@ -280,7 +334,7 @@ def toggle_final_submit_btn():
 if st.session_state["web_page"] == "Login_page":
     # title renders a h1 element
     st.title(
-        "Welcome to the Survey by the Department of Psychology.",
+        "Welcome to the Survey by the School of Psychology.",
     )
 
     # initialize the login form, the form values are stored in state
@@ -486,13 +540,13 @@ elif st.session_state["web_page"] == "Survey_page":
     # collapsible content rendered with expander
     with st.expander("**Original Feedback**"):
         st.markdown(
-            EssayContent.prof_feedback,
+            st.session_state["original_feedback_statement"],
             unsafe_allow_html=True,
         )
 
     with st.expander("**Alternate Feedback**"):
         st.markdown(
-            EssayContent.ai_feedback,
+            st.session_state["alternate_feedback_statement"],
             unsafe_allow_html=True,
         )
 # end of main content
@@ -696,14 +750,14 @@ margin-bottom: 15px
 margin-bottom: 20px
 }
 .amazon_voucher{
-text-align: center; 
-border: 1px solid black; 
+text-align: center;
+border: 1px solid black;
 border-radius: 10px;
 padding: 10px;
 font-weight: bold;
 font-size: 3rem;
 }
-#welcome-to-the-survey-by-department-of-psychology{
+#welcome-to-the-survey-by-school-of-psychology{
 text-align: center;
 }
 .stSlider > div, .stSlider p{
