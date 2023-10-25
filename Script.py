@@ -104,8 +104,8 @@ def getFeedbacksForStudentID(id):
 
     indexes = []
     for statement in statements:
-        indexes.append(r"A{}".format(statement.row))
         indexes.append(r"B{}".format(statement.row))
+        indexes.append(r"C{}".format(statement.row))
 
     result = feedbacks_sheet.batch_get(indexes)
 
