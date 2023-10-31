@@ -137,7 +137,7 @@ def checkStudentDetailsInSheet():
     studentIds = data_sheet.col_values(3)
     participatedStudentIds = data_sheet.col_values(16)
 
-    if student_email not in emails:
+    if student_email not in emails or student_ID not in studentIds:
         # if student_email in emails or student_ID in studentIds:
         st.warning(
             "Oops, we can't find your invitation. Please use your university email address and student ID."
