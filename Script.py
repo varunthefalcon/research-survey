@@ -135,8 +135,7 @@ def checkStudentDetailsInSheet():
     student_ID = st.session_state["student_ID"].strip()
     emails = data_sheet.col_values(2)
     studentIds = data_sheet.col_values(3)
-
-    print(emails)
+    participatedStudentIds = data_sheet.col_values(16)
 
     if student_email not in emails:
         # if student_email in emails or student_ID in studentIds:
@@ -144,7 +143,7 @@ def checkStudentDetailsInSheet():
             "Oops, we can't find your invitation. Please use your university email address and student ID."
         )
         return True
-    elif student_email in emails and student_ID in studentIds:
+    elif student_email in emails and student_ID in participatedStudentIds:
         st.warning("You have already attended the survey. Thank you for participating")
         return True
     elif emails.index(student_email) != studentIds.index(student_ID):
@@ -192,7 +191,7 @@ def api_record_results(
         index += 1
 
     data_sheet.update(
-        r"B{}:O{}".format(index, index),
+        r"B{}:P{}".format(index, index),
         [
             [
                 st.session_state["student_email"],
@@ -209,6 +208,7 @@ def api_record_results(
                 open_feedback,
                 st.session_state["show_instructions_first"],
                 datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+                st.session_state["student_ID"],
             ]
         ],
     )
