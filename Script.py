@@ -543,7 +543,7 @@ elif st.session_state["web_page"] == "Survey_page":
     # end of sidebar
 
     # start of main content
-    st.header("Feedback on your 2nd PSY2008 essay")
+    st.header("Feedback on your 2nd PSY1008 essay")
 
     # collapsible content rendered with expander
     with st.expander("**Original Feedback**"):
