@@ -147,6 +147,14 @@ def checkStudentDetailsInSheet():
     elif student_email in emails and student_ID in studentIds:
         st.warning("You have already attended the survey. Thank you for participating")
         return True
+    elif emails.index(student_email) != studentIds.index(student_ID):
+        st.warning(
+            "Student Email and Student ID do not match. Please verify your details. "
+        )
+        st.warning(
+            "For more information, kindly get in touch with t.schultze@qub.ac.uk"
+        )
+        return True
     elif getFeedbacksForStudentID(student_ID):
         st.warning(
             "Please check the Student ID. We cannot find survey content for your student ID."
