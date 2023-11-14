@@ -323,10 +323,10 @@ def handleFinalSubmit(
     )
     time.sleep(3)
 
-    if st.session_state["show_instructions_first"]:
-        st.session_state["web_page"] = "Voucher_page"
-    else:
-        st.session_state["web_page"] = "Conditional_Instructions_page"
+    # if st.session_state["show_instructions_first"]:
+    # st.session_state["web_page"] = "Voucher_page"
+    # else:
+    st.session_state["web_page"] = "Conditional_Instructions_2_page"
     st.experimental_rerun()
 
 
@@ -658,10 +658,10 @@ elif st.session_state["web_page"] == "Consent_page":
         or not agree6,
         type="primary",
     ):
-        if st.session_state["show_instructions_first"]:
-            st.session_state["web_page"] = "Conditional_Instructions_page"
-        else:
-            st.session_state["web_page"] = "Survey_page"
+        # if st.session_state["show_instructions_first"]:
+        st.session_state["web_page"] = "Conditional_Instructions_1_page"
+        # else:
+        # st.session_state["web_page"] = "Survey_page"
         st.experimental_rerun()
 
     if st.button(
@@ -690,7 +690,7 @@ elif st.session_state["web_page"] == "Do_not_consent_page":
 # No Consent page ends
 
 # Conditional Instructions page starts
-elif st.session_state["web_page"] == "Conditional_Instructions_page":
+elif st.session_state["web_page"] == "Conditional_Instructions_1_page":
     if st.session_state["show_instructions_first"]:
         st.header("Instructions:")
         st.markdown(
@@ -713,9 +713,46 @@ elif st.session_state["web_page"] == "Conditional_Instructions_page":
             '<h1 style="text-align: center; margin-top: 2rem;">&nbsp;</h1>',
             unsafe_allow_html=True,
         )
+        st.header("Instructions:")
+        st.markdown(
+            "In this study, we will show you the feedback you received on your PSY1008 essay on individual differences where you compared the personality theories of Freud and Rogers."
+        )
+        st.markdown(
+            "In addition to the actual feedback you received from your tutor, we will show you an alternative version of that feedback."
+        )
+        st.markdown(
+            "We would kindly ask you to read both versions of the feedback on your essay thoroughly. Once you have read them, please rate each version using a set of four statements. Please also state which version of the feedback you would prefer if you had to choose between them and describe briefly why you prefer one version of the feedback over the other."
+        )
+        st.markdown(
+            "**Important:** Remember that your responses will be treated confidentially. That is, your tutor will not see how you rated their feedback, and you can be completely honest in your assessment of that feedback."
+        )
+
+    clicked = st.button(
+        "Okay, I understand.",
+        type="primary",
+    )
+    if clicked:
+        st.session_state["web_page"] = "Survey_page"
+        st.experimental_rerun()
+# Conditional Instructions page ends
+
+elif st.session_state["web_page"] == "Conditional_Instructions_2_page":
+    if st.session_state["show_instructions_first"]:
+        st.header("Thank you for taking part in this study:")
+        st.markdown(
+            "The aim of our study was to investigate how students would evaluate AI-augmented feedback relative to the original feedback they actually received and which the augmented feedback was based on. The reason why we study AI-augmented feedback is because we want to provide our students with the best possible feedback. Augmenting human feedback with AI might be a way to improve the quality of feedback while making sure that feedback still entails human evaluation of the assignment."
+        )
+        st.markdown(
+            "By taking part in our study, you have provided valuable information on the perceived quality of AI-augmented feedback relative to purely human feedback. Thank you again for taking the time!"
+        )
+    else:
+        st.markdown(
+            '<h1 style="text-align: center; margin-top: 2rem;">&nbsp;</h1>',
+            unsafe_allow_html=True,
+        )
         st.header("Thank you for taking part in this study.")
         st.markdown(
-            "Before, we tell you what the aim of our study was, we would first like to briefly explain how we created the alternative version of the feedback you just read. To create it, we took the original feedback provided by your tutor and fed it into an AI, more specifically, a large language model (LLM). The LLM we used was ChatGPT, which you might be familiar with. We instructed the AI to take the original feedback and make it constructive and encouraging. The result is what we call **AI-augmented feedback**. AI-augmented feedback differs from AI-generated feedback in that it is based on human evaluation of your essay instead of an AI attempting to evaluate and provide feedback on its own."
+            "Before, we tell you what the aim of our study was, we would first like to briefly explain how we created the alternative version of the feedback you just read. To create it, we took the original feedback provided by your tutor and fed it into an AI, more specifically, a large language model (LLM). The LLM we used was ChatGPT, which you might be familiar with. We instructed the AI to take the original feedback and make it constructive and encouraging. The result is what we call AI-augmented feedback. AI-augmented feedback differs from AI-generated feedback in that it is based on human evaluation of your essay instead of an AI attempting to evaluate and provide feedback on its own."
         )
         st.markdown(
             "The aim of our study was to investigate how students would evaluate AI-augmented feedback relative to the original feedback they actually received and which the augmented feedback was based on. The reason why we study AI-augmented feedback is because we want to provide our students with the best possible feedback. Augmenting human feedback with AI might be a way to improve the quality of feedback while making sure that feedback still entails human evaluation of the assignment."
@@ -729,10 +766,7 @@ elif st.session_state["web_page"] == "Conditional_Instructions_page":
         type="primary",
     )
     if clicked:
-        if st.session_state["show_instructions_first"]:
-            st.session_state["web_page"] = "Survey_page"
-        else:
-            st.session_state["web_page"] = "Voucher_page"
+        st.session_state["web_page"] = "Voucher_page"
         st.experimental_rerun()
 # Conditional Instructions page ends
 
