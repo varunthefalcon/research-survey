@@ -737,8 +737,12 @@ elif st.session_state["web_page"] == "Conditional_Instructions_1_page":
 # Conditional Instructions page ends
 
 elif st.session_state["web_page"] == "Conditional_Instructions_2_page":
+    st.markdown(
+        '<h1 style="text-align: center; margin-top: 2rem;">&nbsp;</h1>',
+        unsafe_allow_html=True,
+    )
+    st.header("Thank you for taking part in this study:")
     if st.session_state["show_instructions_first"]:
-        st.header("Thank you for taking part in this study:")
         st.markdown(
             "The aim of our study was to investigate how students would evaluate AI-augmented feedback relative to the original feedback they actually received and which the augmented feedback was based on. The reason why we study AI-augmented feedback is because we want to provide our students with the best possible feedback. Augmenting human feedback with AI might be a way to improve the quality of feedback while making sure that feedback still entails human evaluation of the assignment."
         )
@@ -746,11 +750,6 @@ elif st.session_state["web_page"] == "Conditional_Instructions_2_page":
             "By taking part in our study, you have provided valuable information on the perceived quality of AI-augmented feedback relative to purely human feedback. Thank you again for taking the time!"
         )
     else:
-        st.markdown(
-            '<h1 style="text-align: center; margin-top: 2rem;">&nbsp;</h1>',
-            unsafe_allow_html=True,
-        )
-        st.header("Thank you for taking part in this study.")
         st.markdown(
             "Before, we tell you what the aim of our study was, we would first like to briefly explain how we created the alternative version of the feedback you just read. To create it, we took the original feedback provided by your tutor and fed it into an AI, more specifically, a large language model (LLM). The LLM we used was ChatGPT, which you might be familiar with. We instructed the AI to take the original feedback and make it constructive and encouraging. The result is what we call **AI-augmented feedback**. AI-augmented feedback differs from AI-generated feedback in that it is based on human evaluation of your essay instead of an AI attempting to evaluate and provide feedback on its own."
         )
